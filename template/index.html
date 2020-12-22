@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <meta charset="UTF-8">
+    <title>Focus SMS</title>
+    <meta charset="utf-8">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <title>Swipe – The Simplest Chat Platform</title>
+    <meta name="description" content="#">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'dist/css/lib/bootstrap.min.css' %}" type="text/css" rel="stylesheet">
+    <!-- Swipe core CSS -->
+    <link href="{% static 'dist/css/swipe.min.css' %}" type="text/css" rel="stylesheet">
+    <!-- Favicon -->
+    <link href="{% static 'dist/img/favicon.png' %}" type="image/png" rel="icon">
+</head>
+<body>
+
+<!--
+This works: {{chats}}
+<div id="p-text"></div>
+-->
+{%if request.user.is_authenticated%}
+		<main>
+			<div class="layout">
+				<!-- Start of Navigation -->
+				<div class="navigation">
+					<div class="container">
+						<div class="inside">
+							<div class="nav nav-tab menu">
+								<a href="#members" data-toggle="tab"><i class="material-icons">account_circle</i></a>
+								<a href="#discussions" data-toggle="tab" class="active"><i class="material-icons active">chat_bubble_outline</i></a>
+								<button class="btn power" onclick="visitPage();"><i class="material-icons">power_settings_new</i></button>
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- End of Navigation -->
+				<!-- Start of Sidebar -->
+				<div class="sidebar" id="sidebar">
+					<div class="container">
+						<div class="col-md-12">
+							<div class="tab-content">
+								<!-- Start of Contacts -->
+								<div class="tab-pane fade" id="members">
+									<div class="search">
+										<form class="form-inline position-relative">
+											<input type="search" class="form-control" id="people" placeholder="Search for patients...">
+											<button type="button" class="btn btn-link loop"><i class="material-icons">search</i></button>
+										</form>
+                                        <button class="btn create" data-toggle="modal" data-target="#exampleModalCenter"><i class="material-icons">person_add</i></button>
+
+										</div>
+									<!--
+									<div class="list-group sort">
+										<button class="btn filterMembersBtn active show" data-toggle="list" data-filter="all">All</button>
+										<button class="btn filterMembersBtn" data-toggle="list" data-filter="contacted">Contacted</button>
+
+									</div>
+									-->
+									<div class="contacts">
+										<h1>Contacts</h1>
+										<div class="list-group" id="contacts" role="tablist">
+											{% for p in patients %}
+											<a class="filterMembers all offline contact" data-toggle="list" name="patient_det" id="det_{{p.phone_number}}">
+
+												<div class="data">
+													<h5>{{p.firstname}} {{p.lastname}}</h5>
+													<p>{{p.phone_number}}</p>
+												</div>
+
+											</a>
+											{% endfor %}
+										</div>
+
+									</div>
+								</div>
+								<!-- End of Contacts -->
+								<!-- Start of Discussions -->
+								<div id="discussions" class="tab-pane fade active show">
+									<div class="search">
+										<form class="form-inline position-relative">
+											<input type="search" class="form-control" id="conversations" placeholder="Search for conversations...">
+											<button type="button" class="btn btn-link loop"><i class="material-icons">search</i></button>
+										</form>
+									</div>
+									<!--
+									<div class="list-group sort">
+										<button class="btn filterDiscussionsBtn active show" data-toggle="list" data-filter="all">All</button>
+										<button class="btn filterDiscussionsBtn" data-toggle="list" data-filter="read">Read</button>
+										<button class="btn filterDiscussionsBtn" data-toggle="list" data-filter="unread">Unread</button>
+									</div>
+									-->
+									<div class="discussions">
+										<h1>Discussions</h1>
+										<div class="list-group" id="chats" role="tablist">
+											{% for p in patients %}
+											<a href="#list-chat" class="filterDiscussions all unread single active" name="patient" id="{{p.phone_number}}" data-toggle="list" role="tab">
+
+												<!--<div align="right" class="new bg-blue">
+												</div>
+												-->
+												<div class="data">
+													<h5>{{p.firstname}} {{p.lastname}}</h5>
+
+													<p>{{p.phone_number}}</p>
+												</div>
+											</a>
+											{% endfor %}
+										</div>
+									</div>
+								</div>
+								<!-- End of Discussions -->
+								<!-- Start of Notifications -->
+
+								<!-- End of Notifications -->
+								<!-- Start of Settings -->
+
+								<!-- End of Settings -->
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- End of Sidebar -->
+				<div class="modal fade" id="addquick" tabindex="-1" role="dialog" aria-hidden="true" >
+					<div class="modal-dialog modal-dialog-centered" role="document">
+						<div class="requests">
+							<div class="title">
+								<h1>Add Quick Text</h1>
+								<button type="button" class="btn" data-dismiss="modal" aria-label="Close"><i class="material-icons">close</i></button>
+							</div>
+							<div class="content">
+								<form action="/add-quicktext" method="post" enctype="multipart/form-data">
+									{% csrf_token %}
+									<div class="form-group">
+										<!--<label for="firstname">First name:</label>-->
+										<input type="text" class="form-control" id="Abbr" name="Abbr" placeholder="Abbreviate" required>
+									</div>
+									<div class="form-group">
+										<!--<label for="firstname">First name:</label>-->
+										<input type="text" class="form-control" id="Text" name="Text" placeholder="Text" required>
+									</div>
+									<button type="submit" class="btn button w-100">Add Quick Text</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Start of Add Friends -->
+                <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-dialog-centered" role="document">
+						<div class="requests">
+							<div class="title">
+								<h1>Add Patient</h1>
+								<button type="button" class="btn" data-dismiss="modal" aria-label="Close"><i class="material-icons">close</i></button>
+							</div>
+							<div class="content">
+								<form action="/save-patient" method="post" enctype="multipart/form-data">
+									  {% csrf_token %}
+									<div class="form-group">
+										<!--<label for="firstname">First name:</label>-->
+										<input type="text" class="form-control" id="firstname" name="firstname" placeholder="First Name" required>
+									</div>
+									<div class="form-group">
+									<!--	<label for="lastname">Last name:</label>-->
+										<input type="text" class="form-control" id="lastname" name="lastname" placeholder="Last Name" required>
+									</div>
+									<div class="form-group">
+										<!--<label for="email">Email:</label>-->
+										<input type="text" class="form-control" id="email" name="email" placeholder="Email" >
+									</div>
+									<div class="form-group">
+										<!--<label for="gender">Gender:</label>-->
+										<select type="text" class="form-control" id="gender" name="gender" placeholder="gender" required>
+											<option id="male" value="male">Male</option>
+											<option id="female" value="female">Female</option>
+											<option id="other" value="other">Other</option>
+										</select>
+									</div>
+									<div class="form-group">
+										<!--<label for="date_of_birth">Date Of Birth:</label>-->
+										<input type="text" class="form-control" id="date_of_birth" name="date_of_birth" placeholder="date of birth (mm-dd-yyyy)" required>
+									</div>
+									<div class="form-group">
+										<!--<label for="phone_number">Phone Number:</label>-->
+										<input type="text" class="form-control" id="phone_number" name="phone_number" placeholder="phone number" required>
+									</div>
+
+
+									<button type="submit" class="btn button w-100">Add Patient</button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- End of Add Friends -->
+				<!-- Start of Create Chat -->
+
+				<!-- End of Create Chat -->
+				<div class="main">
+					<div class="tab-content" id="nav-tabContent">
+						<!-- Start of Babble -->
+						<div class="babble tab-pane fade active show" id="list-chat" role="tabpanel" aria-labelledby="list-chat-list">
+							<!-- Start of Chat -->
+
+							<div class="chat" id="chat1">
+								<div class="top">
+									<div class="container">
+										<div class="col-md-12">
+											<div class="inside">
+
+												<div class="data">
+													<h5><a href="#" id="chat_p_name"></a></h5>
+													<h8><a href="#" id="chat_p_number"></a></h8>
+
+												</div>
+
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="content" id="content">
+
+								</div>
+								<div class="container">
+									<div class="col-md-12">
+										<div class="bottom">
+											<button onclick="openselect()" style='width:10px;margin:16px;padding:50px;padding-top: 20px;padding-bottom: 38px;padding-left: 25px;' class="form-control"><i class="material-icons">add</i></button>
+
+											 <select style="width:30px;align:left;background:#9bc9ed;" class="form-control btn" id="selectbox" value="+" hidden>
+													{%for a, b in all%}
+													<option value="{{b}}">{{a}}</option>
+													{%endfor%}
+												 <option data-toggle="modal" data-target="#addquick" value="">Add More</option>
+                                                </select>
+											<div class="position-relative w-100">
+												<textarea class="form-control" id="msg" placeholder="Start typing for reply..." rows="1"></textarea>
+
+												<button onclick="send_msg()" class="btn send"><i class="material-icons">send</i></button>
+
+											</div>
+
+
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="chat" id="nothing" style="margin:50px;margin-top: 10px;">
+								<div style="position:relative;margin:30% 10%;top:45%;right:13%;text-align:center;display:block;vertical-align:middle;" >
+									<h2>Click a Chat to view messages</h2>
+								</div>
+							</div>
+
+							<div class="chat" id="details1" style="margin:50px;margin-top: 10px;" hidden>
+								<!-- <div class="content" style="margin:50px;" > -->
+								<div class="top" style="padding-top: 10px;">
+									<div class="container">
+										<div class="col-md-12">
+											<div class="inside">
+
+												<div class="data">
+													<h5><a href="#" id="show_p_name"></a></h5>
+													<h8><a href="#" id="show_p_number"></a></h8>
+
+												</div>
+
+											</div>
+										</div>
+									</div>
+								</div>
+								<div>
+									<form>
+											<label for="_firstname" >Firstname</label>
+											<input class="form-control" id="_firstname" type="text" readonly/>
+											<label for="_lastname" >Lastname</label>
+											<input class="form-control" id="_lastname" type="text" readonly/>
+											<label for="_dob" >Date Of Birth</label>
+											<input class="form-control" id="_dob" type="text" readonly/>
+											<label for="_gender" >Gender</label>
+											<input class="form-control" id="_gender" type="text" readonly/>
+											<label for="_phone" >Phone Number</label>
+											<input class="form-control" id="_phone" type="text" readonly/>
+											<label for="_email" >Email</label>
+											<input class="form-control" id="_email" type="text" readonly/>
+									</form>
+									<br />
+								</div>
+
+								<!-- </div> -->
+							</div>
+							<!-- End of Chat -->
+							<!-- Start of Call -->
+
+							<!-- End of Call -->
+						</div>
+						<!-- End of Babble -->
+
+						<!-- End of Babble -->
+
+						<!-- End of Babble -->
+					</div>
+				</div>
+			</div> <!-- Layout -->
+		</main>
+		<!-- Bootstrap/Swipe core JavaScript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="{% static 'dist/js/jquery-3.3.1.slim.min.js' %}" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script>window.jQuery || document.write('<script src="{% static 'dist/js/vendor/jquery-slim.min.js' %}"><\/script>')</script>
+		<script src="{% static 'dist/js/vendor/popper.min.js' %}"></script>
+		<script src="{% static 'dist/js/swipe.min.js' %}"></script>
+		<script src="{% static 'dist/js/bootstrap.min.js' %}"></script>
+		<script>
+			function scrollToBottom(el) { el.scrollTop = el.scrollHeight; }
+			scrollToBottom(document.getElementById('content'));
+		</script>
+
+
+
+{%else%}
+<main>
+<div align="center" style="padding:10px;" class="container" >
+<h3 align="center" style="content-align:center;">
+    Welcome to Focus EyeCare Center
+    <br />
+    <a style="color:#2196F3;" href = "{% url 'login'%}">Login</a></h3>
+{%endif%}
+
+</div></main>
+</body>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+
+
+<script>
+function add_quick(){
+console.log("add more");
+document.getElementById('addquick').removeAttribute('hidden','');
+document.getElementById('selectbox').setAttribute('hidden','');
+}
+
+$('#selectbox').change(function(){
+    var value = $(this).val();
+    document.getElementById('selectbox').setAttribute('hidden','');
+    console.log("selected",value);
+    document.getElementById('msg').innerHTML += value;
+});
+
+function openselect() {
+ 	elem = document.getElementById('selectbox');
+ 	elem.removeAttribute('hidden','');
+	console.log("open!");
+	//elem.css("display", "inline-block").slideDown();
+	if (document.createEvent) {
+        var e = document.createEvent("MouseEvents");
+        e.initMouseEvent("mousedown", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        elem[0].dispatchEvent(e);
+    } else if (element.fireEvent) {
+        elem[0].fireEvent("onmousedown");
+    }
+}
+
+function send_msg(){
+	console.log("send");
+	var msg = document.getElementById('msg').value;
+	var to = document.getElementById('chat_p_number').innerHTML;
+	console.log(msg,to);
+	$.ajax({
+        url: '{% url 'send_message' %}',
+        data: {
+        'msg':msg,
+        'to':to
+        },
+        dataType: 'json',
+        success: function (data) {
+        console.log('sent!');
+        document.getElementById('msg').value = "";
+        }
+    });
+
+}
+$('a[name="patient_det"]').click(function(){
+    //do stuff
+    console.log("details");
+    document.getElementById('chat1').setAttribute('hidden','');
+    document.getElementById('details1').removeAttribute('hidden','');
+	document.getElementById('nothing').setAttribute('hidden','');
+
+    var id = $(this).attr('id');
+    id = id.slice(4,id.length);
+    $.ajax({
+        url: '{% url 'show_detail' %}',
+        data: {
+        'id':id
+        },
+        dataType: 'json',
+        success: function (data) {
+        document.getElementById('show_p_name').innerHTML = data['firstname']+" "+data['lastname'];
+        document.getElementById('show_p_number').innerHTML = data['phone_number'];
+        document.getElementById('_firstname').setAttribute('value',data['firstname']);
+        document.getElementById('_lastname').setAttribute('value',data['lastname']);
+
+        document.getElementById('_gender').setAttribute('value',data['gender']);
+        document.getElementById('_dob').setAttribute('value',data['dob']);
+        document.getElementById('_phone').setAttribute('value',data['phone_number']);
+        document.getElementById('_email').setAttribute('value',data['email']);
+
+        console.log("returned",data['firstname'],data['gender']);
+
+        }
+    });
+});
+
+
+
+$('a[name="patient"]').click(function(){
+    //do stuff
+    console.log("clicked");
+    document.getElementById('chat1').removeAttribute('hidden','');
+    document.getElementById('details1').setAttribute('hidden','');
+    document.getElementById('nothing').setAttribute('hidden','');
+
+
+    var id = $(this).attr('id');
+     $.ajax({
+        url: '{% url 'specialDiv' %}',
+        data: {
+        "id":id,
+        },
+        dataType: 'json',
+        success: function (data) {
+          console.log("I am here");
+
+          var i;
+          var text = "";
+          var newchat = '<div class="container">\n<div class="col-md-12">'
+          //newchat += '<div class="message"><div class="text-main"><div class="text-group"><div class="text"><p>'+data['data2']+'</p></div></div><span>09:46 AM</span></div></div>';
+		  //newchat += '<div class="message"><div class="text-main"><div class="text-group"><div class="text"><p>data['messages'][i][1]</p></div></div><span>09:46 AM</span></div></div>';
+		//	for (x in myObj)
+		  for (i in data['messages']) {
+		  	if (data['messages'][i]['sender'] == 'me' )
+		  	{
+		  	console.log("mine");
+		  	newchat += '<div class="message me"><div class="text-main"><div class="text-group me"><div class="text me"><p>'+data['messages'][i]['msg']+'</p></div></div><span>'+data['messages'][i]['datetime']+'</span></div></div>';
+		  	}
+		  	else{
+		  	newchat += '<div class="message"><div class="text-main"><div class="text-group"><div class="text"><p>'+data['messages'][i]['msg']+'</p></div></div><span>'+data['messages'][i]['datetime']+'</span></div></div>';
+		  	}
+		  	//text += data['messages'][i][1] + "<br>";
+		  }
+		  console.log("me",data['messages']);
+		  console.log("you",text);
+          newchat += '</div></div>';
+          document.getElementById('content').innerHTML = newchat;
+          document.getElementById('chat_p_name').innerHTML = data['name'];
+          document.getElementById('chat_p_number').innerHTML = data['data2'];
+        }
+    });
+
+});
+var URL = '{% url 'specialDiv' %}';
+function refresh() {
+	console.log("i am refreshing");
+	var num = document.getElementById('chat_p_number').innerHTML;
+
+	var openchat = '<main><div class="layout"><div class="main order-md-1"><div class="start"><div class="container"><div class="col-md-12"><div class="content"><h1>Click a Chat to view message</h1></div></div></div></div></div></div></main>';
+	if (num == "")
+	{
+	console.log("here if");
+	document.getElementById('chat1').setAttribute('hidden','');
+	//document.getElementById('chat1').innerHTML = openchat;
+	}
+	else{
+	console.log("inner",num);
+    $.ajax({
+        url: URL,
+        data: {
+		"id":num,
+        },
+        dataType: 'json',
+        success: function (data) {
+          console.log("I am here");
+
+          var i;
+          var text = "";
+          var newchat = '<div class="container">\n<div class="col-md-12">'
+          //newchat += '<div class="message"><div class="text-main"><div class="text-group"><div class="text"><p>'+data['data2']+'</p></div></div><span>09:46 AM</span></div></div>';
+		  //newchat += '<div class="message"><div class="text-main"><div class="text-group"><div class="text"><p>data['messages'][i][1]</p></div></div><span>09:46 AM</span></div></div>';
+		//	for (x in myObj)
+		  for (i in data['messages']) {
+		  	if (data['messages'][i]['sender'] == 'me' )
+		  	{
+		  	console.log("mine");
+		  	newchat += '<div class="message me"><div class="text-main"><div class="text-group me"><div class="text me"><p>'+data['messages'][i]['msg']+'</p></div></div><span>'+data['messages'][i]['datetime']+'</span></div></div>';
+		  	}
+		  	else{
+		  	newchat += '<div class="message"><div class="text-main"><div class="text-group"><div class="text"><p>'+data['messages'][i]['msg']+'</p></div></div><span>'+data['messages'][i]['datetime']+'</span></div></div>';
+		  	}
+		  	//text += data['messages'][i][1] + "<br>";
+		  }
+		  console.log("me",data['messages']);
+		  console.log("you",text);
+          newchat += '</div></div>';
+          document.getElementById('content').innerHTML = newchat;
+          document.getElementById('chat_p_name').innerHTML = data['name'];
+          document.getElementById('chat_p_number').innerHTML = data['data2'];
+        }
+    });
+    }
+
+  }
+
+$(document).ready(function($) {
+  refresh();
+  setInterval("refresh()", 3000);
+})
+
+</script>
+</html>
